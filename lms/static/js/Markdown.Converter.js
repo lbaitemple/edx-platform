@@ -1,3 +1,4 @@
+/* eslint-disable */
 var Markdown;
 
 if (typeof exports === 'object' && typeof require === 'function') // we're in a CommonJS (e.g. Node.js) module
@@ -551,24 +552,27 @@ else
         }
 
         function writeAnchorTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
-            if (m7 == undefined) m7 = '';
+            var result;
             var whole_match = m1;
-            var link_text = m2.replace(/:\/\//g, '~P'); // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
-            var link_id = m3.toLowerCase();
+            // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
+            var linkTest = m2.replace(/:\/\//g, '~P');
+            var linkId = m3.toLowerCase();
             var url = m4;
-            var title = m7;
+            var title;
+            if (m7 == undefined) m7 = '';
+            title = m7;
 
             if (url == '') {
-                if (link_id == '') {
+                if (linkId == '') {
                     // lower-case and turn embedded newlines into spaces
-                    link_id = link_text.toLowerCase().replace(/ ?\n/g, ' ');
+                    linkId = linkTest.toLowerCase().replace(/ ?\n/g, ' ');
                 }
-                url = '#' + link_id;
+                url = '#' + linkId;
 
-                if (g_urls.get(link_id) != undefined) {
-                    url = g_urls.get(link_id);
-                    if (g_titles.get(link_id) != undefined) {
-                        title = g_titles.get(link_id);
+                if (g_urls.get(linkId) != undefined) {
+                    url = g_urls.get(linkId);
+                    if (g_titles.get(linkId) != undefined) {
+                        title = g_titles.get(linkId);
                     }
                 }                else {
                     if (whole_match.search(/\(\s*\)$/m) > -1) {
@@ -580,7 +584,7 @@ else
                 }
             }
             url = attributeSafeUrl(url);
-            var result = '<a href="' + url + '"';
+            result = '<a href="' + url + '"'; // xss-lint: disable=javascript-concat-html
 
             if (title != '') {
                 title = attributeEncode(title);
@@ -588,7 +592,7 @@ else
                 result += ' title="' + title + '"';
             }
 
-            result += '>' + link_text + '</a>';
+            result += '>' + linkTest + '</a>'; // xss-lint: disable=javascript-concat-html
 
             return result;
         }
@@ -659,34 +663,35 @@ else
         }
 
         function writeImageTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
+            var result;
             var whole_match = m1;
-            var alt_text = m2;
-            var link_id = m3.toLowerCase();
+            var altText = m2;
+            var linkId = m3.toLowerCase();
             var url = m4;
             var title = m7;
 
             if (!title) title = '';
 
             if (url == '') {
-                if (link_id == '') {
+                if (linkId == '') {
                     // lower-case and turn embedded newlines into spaces
-                    link_id = alt_text.toLowerCase().replace(/ ?\n/g, ' ');
+                    linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
                 }
-                url = '#' + link_id;
+                url = '#' + linkId;
 
-                if (g_urls.get(link_id) != undefined) {
-                    url = g_urls.get(link_id);
-                    if (g_titles.get(link_id) != undefined) {
-                        title = g_titles.get(link_id);
+                if (g_urls.get(linkId) != undefined) {
+                    url = g_urls.get(linkId);
+                    if (g_titles.get(linkId) != undefined) {
+                        title = g_titles.get(linkId);
                     }
                 }                else {
                     return whole_match;
                 }
             }
 
-            alt_text = escapeCharacters(attributeEncode(alt_text), '*_[]()');
+            altText = escapeCharacters(attributeEncode(altText), '*_[]()');
             url = escapeCharacters(url, '*_');
-            var result = '<img src="' + url + '" alt="' + alt_text + '"';
+            result = '<img src="' + url + '" alt="' + altText + '"'; // xss-lint: disable=javascript-concat-html
 
             // attacklab: Markdown.pl adds empty title attributes to images.
             // Replicate this bug.
@@ -711,11 +716,11 @@ else
             //  --------
             //
             text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-                function(wholeMatch, m1) { return '<h1>' + _RunSpanGamut(m1) + '</h1>\n\n'; }
+                function(wholeMatch, m1) { return '<h1>' + _RunSpanGamut(m1) + '</h1>\n\n'; } // xss-lint: disable=javascript-concat-html
             );
 
             text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-                function(matchFound, m1) { return '<h2>' + _RunSpanGamut(m1) + '</h2>\n\n'; }
+                function(matchFound, m1) { return '<h2>' + _RunSpanGamut(m1) + '</h2>\n\n'; } // xss-lint: disable=javascript-concat-html
             );
 
             // atx-style headers:
@@ -739,8 +744,8 @@ else
 
             text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
                 function(wholeMatch, m1, m2) {
-                    var h_level = m1.length;
-                    return '<h' + h_level + '>' + _RunSpanGamut(m2) + '</h' + h_level + '>\n\n';
+                    var hLevel = m1.length;
+                    return '<h' + hLevel + '>' + _RunSpanGamut(m2) + '</h' + hLevel + '>\n\n'; // xss-lint: disable=javascript-concat-html
                 }
             );
 
@@ -785,16 +790,16 @@ else
             if (g_list_level) {
                 text = text.replace(whole_list, function(wholeMatch, m1, m2) {
                     var list = m1;
-                    var list_type = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+                    var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
 
-                    var result = _ProcessListItems(list, list_type);
+                    var result = _ProcessListItems(list, listType);
 
-                    // Trim any trailing whitespace, to put the closing `</$list_type>`
+                    // Trim any trailing whitespace, to put the closing `</$listType>`
                     // up on the preceding line, to get it past the current stupid
                     // HTML block parser. This is a hack to work around the terrible
                     // hack that is the HTML block parser.
                     result = result.replace(/\s+$/, '');
-                    result = '<' + list_type + '>' + result + '</' + list_type + '>\n';
+                    result = '<' + listType + '>' + result + '</' + listType + '>\n'; // xss-lint: disable=javascript-concat-html
                     return result;
                 });
             } else {
@@ -803,9 +808,9 @@ else
                     var runup = m1;
                     var list = m2;
 
-                    var list_type = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-                    var result = _ProcessListItems(list, list_type);
-                    result = runup + '<' + list_type + '>\n' + result + '</' + list_type + '>\n';
+                    var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+                    var result = _ProcessListItems(list, listType);
+                    result = runup + '<' + listType + '>\n' + result + '</' + listType + '>\n'; // xss-lint: disable=javascript-concat-html
                     return result;
                 });
             }
@@ -818,12 +823,12 @@ else
 
         var _listItemMarkers = {ol: '\\d+[.]', ul: '[*+-]'};
 
-        function _ProcessListItems(list_str, list_type) {
+        function _ProcessListItems(list_str, listType) {
             //
             //  Process the contents of a single ordered or unordered list, splitting it
             //  into individual list items.
             //
-            //  list_type is either "ul" or "ol".
+            //  listType is either "ul" or "ol".
 
             // The $g_list_level global keeps track of when we're inside a list.
             // Each time we enter a list, we increment it; when we leave a list,
@@ -854,7 +859,7 @@ else
             // attacklab: add sentinel to emulate \z
             list_str += '~0';
 
-            // In the original attacklab showdown, list_type was not given to this function, and anything
+            // In the original attacklab showdown, listType was not given to this function, and anything
             // that matched /[*+-]|\d+[.]/ would just create the next <li>, causing this mismatch:
             //
             //  Markdown          rendered by WMD        rendered by MarkdownSharp
@@ -864,7 +869,7 @@ else
             //  - third           3. third                   * third
             //
             // We changed this to behave identical to MarkdownSharp. This is the constructed RegEx,
-            // with {MARKER} being one of \d+[.] or [*+-], depending on list_type:
+            // with {MARKER} being one of \d+[.] or [*+-], depending on listType:
 
             /*
             list_str = list_str.replace(/
@@ -879,7 +884,7 @@ else
             /gm, function(){...});
             */
 
-            var marker = _listItemMarkers[list_type];
+            var marker = _listItemMarkers[listType];
             var re = new RegExp('(^[ \\t]*)(' + marker + ')[ \\t]+([^\\r]+?(\\n+))(?=(~0|\\1(' + marker + ')[ \\t]+))', 'gm');
             var last_item_had_a_double_newline = false;
             list_str = list_str.replace(re,
@@ -898,7 +903,7 @@ else
                         item = _RunSpanGamut(item);
                     }
                     last_item_had_a_double_newline = ends_with_double_newline;
-                    return '<li>' + item + '</li>\n';
+                    return '<li>' + item + '</li>\n'; // xss-lint: disable=javascript-concat-html
                 }
             );
 
@@ -940,7 +945,7 @@ else
                     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
                     codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 
-                    codeblock = '<pre><code>' + codeblock + '\n</code></pre>';
+                    codeblock = '<pre><code>' + codeblock + '\n</code></pre>'; // xss-lint: disable=javascript-concat-html
 
                     return '\n\n' + codeblock + '\n\n' + nextChar;
                 }
@@ -1003,7 +1008,7 @@ else
                     c = c.replace(/[ \t]*$/g, ''); // trailing whitespace
                     c = _EncodeCode(c);
                     c = c.replace(/:\/\//g, '~P'); // to prevent auto-linking. Not necessary in code *blocks*, but in code spans. Will be converted back after the auto-linker runs.
-                    return m1 + '<code>' + c + '</code>';
+                    return m1 + '<code>' + c + '</code>'; // xss-lint: disable=javascript-concat-html
                 }
             );
 
@@ -1092,7 +1097,7 @@ else
                             return pre;
                         });
 
-                    return hashBlock('<blockquote>\n' + bq + '\n</blockquote>');
+                    return hashBlock('<blockquote>\n' + bq + '\n</blockquote>'); // xss-lint: disable=javascript-concat-html
                 }
             );
             return text;
@@ -1184,6 +1189,7 @@ else
         }
 
         function _DoAutoLinks(text) {
+            var replacer
             // note that at this point, all other URL in the text are already hyperlinked as <a href=""></a>
             // *except* for the <http://www.foo.com> case
 
@@ -1193,7 +1199,7 @@ else
 
             //  autolink anything like <http://example.com>
 
-            var replacer = function(wholematch, m1) { return '<a href="' + m1 + '">' + pluginHooks.plainLinkText(m1) + '</a>'; };
+            replacer = function(wholematch, m1) { return '<a href="' + m1 + '">' + pluginHooks.plainLinkText(m1) + '</a>'; }; // xss-lint: disable=javascript-concat-html
             text = text.replace(/<((https?|ftp):[^'">\s]+)>/gi, replacer);
 
             // Email addresses: <address@domain.foo>
