@@ -1,7 +1,7 @@
 python-software-properties
 pkg-config
 gfortran
-libatlas-dev
+libatlas-base-dev
 libblas-dev
 liblapack-dev
 liblapack3gf
@@ -14,9 +14,9 @@ build-essential
 python-dev
 gfortran
 libfreetype6-dev
-libpng12-dev
+libpng-dev
 libjpeg-dev
-libtiff4-dev
+libtiff5-dev
 zlib1g-dev
 libxml2-dev
 libxslt-dev
@@ -34,6 +34,7 @@ nodejs
 mysql-client
 virtualenvwrapper
 libgeos-ruby1.8
-lynx-cur
+lynx-common 
+lynx
 libxmlsec1-dev
 swig
